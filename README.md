@@ -1,58 +1,60 @@
 # ♞ Chess Teacher
 
-Tutor de xadrez pessoal que importa o PGN **já analisado** do chess.com e te explica o **porquê** de cada lance ruim seu — virando o erro em uma **regra conceitual**, com a linha melhor calculada pelo Stockfish e navegação lance-a-lance.
+A personal chess tutor that imports your **already reviewed** chess.com PGN and explains the **why** behind each of your bad moves — turning the mistake into an **objective concept/rule**, with the best line computed by Stockfish and step-by-step navigation.
 
-- 🔧 **Motor:** Stockfish (WASM lite single-threaded) — roda no navegador, grátis e offline.
-- 🤖 **Tutor:** Claude (API da Anthropic), chamado direto do navegador.
-- 🌐 **100% local:** sem backend, sem banco de dados. Histórico dos últimos 30 jogos no próprio aparelho (IndexedDB).
-- 📱 **PWA:** instalável no celular (Android/Chrome) e no notebook.
+- 🔧 **Engine:** Stockfish (WASM, lite single-threaded) — runs in the browser, free and offline.
+- 🤖 **Tutor:** Claude (Anthropic API), called directly from the browser. The Tutor teaches in **PT-BR**; the app UI is in English.
+- 🌐 **100% local:** no backend, no database. History of the last 30 games lives on the device (IndexedDB).
+- 📱 **PWA:** installable on mobile (Android/Chrome) and on a laptop.
 
-## Requisitos
+## Requirements
 
-- Node.js 18+ (recomendado 20+)
-- Uma chave de API da Anthropic — pegue em https://console.anthropic.com/settings/keys
+- Node.js 18+ (20+ recommended)
+- An Anthropic API key — get one at https://console.anthropic.com/settings/keys
 
-## Como rodar (desenvolvimento)
+## Run (development)
 
 ```bash
-npm install          # instala deps e copia o Stockfish para public/engine
+npm install          # installs deps and copies Stockfish into public/engine
 npm run dev          # http://localhost:5173
 ```
 
-1. Abra o app → aba **Config** → cole sua **chave de API** e escolha o modelo.
-2. Aba **Importar** → cole o PGN da partida (com a Revisão do chess.com) → escolha sua cor → **Analisar**.
-   - Dica: clique em **“Usar PGN de exemplo”** para testar (você jogou de **pretas**).
+1. Open the app → **Settings** tab → paste your **API key** and pick a model.
+2. **Import** tab → paste a PGN (already reviewed on chess.com) → pick your color → **Analyze**.
+   - Tip: click **"Use sample PGN"** to try it out (you played **black**).
 
-## Build de produção / preview
+## Production build / preview
 
 ```bash
-npm run build        # gera dist/ (inclui o motor e o service worker do PWA)
-npm run preview      # serve o dist/ localmente
+npm run build        # outputs dist/ (includes the engine and the PWA service worker)
+npm run preview      # serves dist/ locally
 ```
 
-## Usar no celular
+## Use on mobile
 
-Duas opções:
+- **Static deploy (recommended):** push `dist/` to any static host with HTTPS (GitHub Pages, Vercel, Netlify…). Open it on your phone and **install** it (Chrome menu → "Add to Home screen") for PWA + offline.
+- **Local network:** `npm run dev -- --host` and open the laptop's IP on the same Wi-Fi.
 
-- **Deploy estático** (recomendado): suba a pasta `dist/` em qualquer host estático (Vercel, Netlify, GitHub Pages…). Abra no celular e **instale como app** (menu do Chrome → “Adicionar à tela inicial”).
-- **Rede local:** `npm run dev -- --host` e acesse pelo IP do notebook na mesma rede Wi-Fi.
+> The API key is stored **only on the device** (localStorage). Configure it once per device. History does **not** sync between devices (by design — no database).
 
-> A chave de API fica salva **só no aparelho** (localStorage). Em cada aparelho novo, configure a chave uma vez. O histórico **não sincroniza** entre aparelhos (por design — sem banco de dados).
+## Deploy (GitHub Pages)
 
-## Notas
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys to GitHub Pages on every push to `main`. The repository must be **public** for free Pages. You can also trigger it manually from the **Actions** tab (Run workflow).
 
-- A **primeira análise** baixa o motor (~7 MB) e fica em cache (depois roda offline).
-- Cada análise faz 1 chamada ao Claude por lance ruim + 1 para os padrões. Com Sonnet, custa centavos por jogo.
-- Reimportar o mesmo jogo **não duplica** no histórico (dedup pelo ID do PGN).
+## Notes
 
-## Estrutura
+- The **first analysis** downloads the engine (~7 MB) and caches it (then runs offline).
+- Each analysis makes one Claude call per bad move + one for the patterns. With Sonnet it costs a few cents per game.
+- Re-importing the same game does **not** duplicate it in history (dedup by the PGN's game id).
+
+## Structure
 
 ```
 src/
   lib/        pgn (parser) · engine (Stockfish) · anthropic (Claude) · prompts · analysis · storage · concepts
-  store/      useSettings (chave/modelo) · useApp (navegação/sessão)
+  store/      useSettings (key/model) · useApp (navigation/session)
   components/ Board · Markdown · Header · bits
   screens/    Import · Analyzing · Study · History · Settings
-public/engine/  Stockfish WASM (copiado de node_modules no postinstall)
-scripts/        copy-engine.mjs · test-parse.mjs (teste headless do parser)
+public/engine/  Stockfish WASM (copied from node_modules on postinstall)
+scripts/        copy-engine.mjs · test-parse.mjs (headless parser test)
 ```

@@ -1,51 +1,51 @@
 import type { Category, Classification } from '@/types'
 
 // ───────────────────────────────────────────────────────────────────────────
-// Taxonomia fixa de conceitos (usada nas tags de erro e na análise de padrões)
+// Fixed concept taxonomy (used for error tags and pattern analysis)
 // ───────────────────────────────────────────────────────────────────────────
 
 export interface ConceptDef {
   tag: string
-  rotulo: string
-  grupo: string
+  label: string
+  group: string
 }
 
 export const CONCEPTS: ConceptDef[] = [
-  // Abertura
-  { tag: 'desenvolvimento', rotulo: 'Desenvolvimento das peças', grupo: 'Abertura' },
-  { tag: 'centro', rotulo: 'Controle do centro', grupo: 'Abertura' },
-  { tag: 'seguranca_do_rei', rotulo: 'Segurança do rei / roque', grupo: 'Abertura' },
-  { tag: 'ordem_de_lances', rotulo: 'Ordem de lances', grupo: 'Abertura' },
-  // Tática
-  { tag: 'garfo', rotulo: 'Garfo', grupo: 'Tática' },
-  { tag: 'cravada', rotulo: 'Cravada', grupo: 'Tática' },
-  { tag: 'raio_x', rotulo: 'Raio-X / espeto', grupo: 'Tática' },
-  { tag: 'descoberto', rotulo: 'Ataque descoberto', grupo: 'Tática' },
-  { tag: 'peca_pendurada', rotulo: 'Peça pendurada', grupo: 'Tática' },
-  { tag: 'desvio', rotulo: 'Desvio / atração', grupo: 'Tática' },
-  { tag: 'lance_intermediario', rotulo: 'Lance intermediário (zwischenzug)', grupo: 'Tática' },
-  // Posicional
-  { tag: 'estrutura_de_peoes', rotulo: 'Estrutura de peões', grupo: 'Posicional' },
-  { tag: 'peao_isolado_passado', rotulo: 'Peão isolado / passado', grupo: 'Posicional' },
-  { tag: 'casas_fracas', rotulo: 'Casas fracas / buracos', grupo: 'Posicional' },
-  { tag: 'par_de_bispos', rotulo: 'Par de bispos', grupo: 'Posicional' },
-  { tag: 'coluna_aberta', rotulo: 'Coluna aberta', grupo: 'Posicional' },
-  { tag: 'espaco', rotulo: 'Espaço', grupo: 'Posicional' },
-  { tag: 'peca_ma', rotulo: 'Peça má (bispo ruim etc.)', grupo: 'Posicional' },
-  { tag: 'iniciativa', rotulo: 'Iniciativa / tempo', grupo: 'Posicional' },
-  // Defesa
-  { tag: 'defender_peca', rotulo: 'Defender peça atacada', grupo: 'Defesa' },
-  { tag: 'profilaxia', rotulo: 'Profilaxia', grupo: 'Defesa' },
-  { tag: 'simplificar_sob_pressao', rotulo: 'Simplificar sob pressão', grupo: 'Defesa' },
-  { tag: 'jogo_posicional_defensivo', rotulo: 'Jogo posicional defensivo', grupo: 'Defesa' },
-  // Finais
-  { tag: 'oposicao', rotulo: 'Oposição', grupo: 'Finais' },
-  { tag: 'rei_ativo', rotulo: 'Rei ativo no final', grupo: 'Finais' },
-  { tag: 'regra_do_quadrado', rotulo: 'Regra do quadrado', grupo: 'Finais' },
-  { tag: 'torre_atras_do_peao', rotulo: 'Torre atrás do peão passado', grupo: 'Finais' },
-  // Cálculo
-  { tag: 'contar_atacantes_defensores', rotulo: 'Contar atacantes x defensores', grupo: 'Cálculo' },
-  { tag: 'checar_xeques_capturas_ameacas', rotulo: 'Checar xeques/capturas/ameaças', grupo: 'Cálculo' },
+  // Opening
+  { tag: 'development', label: 'Piece development', group: 'Opening' },
+  { tag: 'center_control', label: 'Center control', group: 'Opening' },
+  { tag: 'king_safety', label: 'King safety / castling', group: 'Opening' },
+  { tag: 'move_order', label: 'Move order', group: 'Opening' },
+  // Tactics
+  { tag: 'fork', label: 'Fork', group: 'Tactics' },
+  { tag: 'pin', label: 'Pin', group: 'Tactics' },
+  { tag: 'x_ray', label: 'X-ray / skewer', group: 'Tactics' },
+  { tag: 'discovered_attack', label: 'Discovered attack', group: 'Tactics' },
+  { tag: 'hanging_piece', label: 'Hanging piece', group: 'Tactics' },
+  { tag: 'deflection', label: 'Deflection / decoy', group: 'Tactics' },
+  { tag: 'in_between_move', label: 'In-between move (zwischenzug)', group: 'Tactics' },
+  // Positional
+  { tag: 'pawn_structure', label: 'Pawn structure', group: 'Positional' },
+  { tag: 'isolated_passed_pawn', label: 'Isolated / passed pawn', group: 'Positional' },
+  { tag: 'weak_squares', label: 'Weak squares / holes', group: 'Positional' },
+  { tag: 'bishop_pair', label: 'Bishop pair', group: 'Positional' },
+  { tag: 'open_file', label: 'Open file', group: 'Positional' },
+  { tag: 'space', label: 'Space', group: 'Positional' },
+  { tag: 'bad_piece', label: 'Bad piece (bad bishop, etc.)', group: 'Positional' },
+  { tag: 'initiative', label: 'Initiative / tempo', group: 'Positional' },
+  // Defense
+  { tag: 'defend_piece', label: 'Defending an attacked piece', group: 'Defense' },
+  { tag: 'prophylaxis', label: 'Prophylaxis', group: 'Defense' },
+  { tag: 'simplify_under_pressure', label: 'Simplify under pressure', group: 'Defense' },
+  { tag: 'positional_defense', label: 'Positional defense', group: 'Defense' },
+  // Endgames
+  { tag: 'opposition', label: 'Opposition', group: 'Endgames' },
+  { tag: 'active_king', label: 'Active king in the endgame', group: 'Endgames' },
+  { tag: 'square_rule', label: 'Rule of the square', group: 'Endgames' },
+  { tag: 'rook_behind_passed_pawn', label: 'Rook behind the passed pawn', group: 'Endgames' },
+  // Calculation
+  { tag: 'count_attackers_defenders', label: 'Count attackers vs defenders', group: 'Calculation' },
+  { tag: 'check_captures_threats', label: 'Check checks/captures/threats', group: 'Calculation' },
 ]
 
 export const CONCEPT_TAGS = CONCEPTS.map((c) => c.tag)
@@ -53,17 +53,17 @@ export const CONCEPT_TAGS = CONCEPTS.map((c) => c.tag)
 const CONCEPT_BY_TAG = new Map(CONCEPTS.map((c) => [c.tag, c]))
 
 export function conceptLabel(tag: string): string {
-  return CONCEPT_BY_TAG.get(tag)?.rotulo ?? tag
+  return CONCEPT_BY_TAG.get(tag)?.label ?? tag
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// Mapeamento de classificação (chess.com) → categoria PT-BR + estilo visual
+// Classification (chess.com) → display category + visual style
 // ───────────────────────────────────────────────────────────────────────────
 
 export interface CategoryStyle {
   category: Category
-  marcador: string // ?!, ?, ??, X, !
-  cor: string // hex (Tailwind mark.*)
+  marker: string // ?!, ?, ??, X, !
+  color: string // hex (Tailwind mark.*)
   isStudy: boolean
 }
 
@@ -72,33 +72,33 @@ const POSITIVE: Classification[] = ['Brilliant', 'Great', 'Best', 'Excellent']
 export function classify(c: Classification): CategoryStyle | null {
   switch (c) {
     case 'Inaccuracy':
-      return { category: 'Imprecisão', marcador: '?!', cor: '#f5c542', isStudy: true }
+      return { category: 'Inaccuracy', marker: '?!', color: '#f5c542', isStudy: true }
     case 'Mistake':
-      return { category: 'Erro', marcador: '?', cor: '#e8862e', isStudy: true }
+      return { category: 'Mistake', marker: '?', color: '#e8862e', isStudy: true }
     case 'Blunder':
-      return { category: 'Capivarada', marcador: '??', cor: '#b33430', isStudy: true }
+      return { category: 'Blunder', marker: '??', color: '#b33430', isStudy: true }
     case 'Miss':
-      return { category: 'Chance perdida', marcador: 'X', cor: '#e06666', isStudy: true }
+      return { category: 'Miss', marker: 'X', color: '#e06666', isStudy: true }
     default:
       if (POSITIVE.includes(c)) {
-        return { category: 'Excelente', marcador: '!', cor: '#5b9bd5', isStudy: false }
+        return { category: 'Excellent', marker: '!', color: '#5b9bd5', isStudy: false }
       }
-      return null // Good / Book → ignorado
+      return null // Good / Book → ignored
   }
 }
 
-/** Cor (hex) por nome amigável usado pelo Tutor nos destaques. */
-export function highlightColor(nome?: string): string {
-  switch ((nome ?? '').toLowerCase()) {
-    case 'verde':
+/** Color (rgba) by the friendly name used by the Tutor in highlights. */
+export function highlightColor(name?: string): string {
+  switch ((name ?? '').toLowerCase()) {
+    case 'green':
       return 'rgba(122, 170, 80, 0.9)'
-    case 'azul':
+    case 'blue':
       return 'rgba(91, 155, 213, 0.9)'
-    case 'amarelo':
+    case 'yellow':
       return 'rgba(245, 197, 66, 0.9)'
-    case 'laranja':
+    case 'orange':
       return 'rgba(232, 134, 46, 0.95)'
-    case 'vermelho':
+    case 'red':
       return 'rgba(179, 52, 48, 0.95)'
     default:
       return 'rgba(122, 170, 80, 0.9)'

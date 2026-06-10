@@ -2,6 +2,7 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
 
 # Motor Stockfish — gerado pelo postinstall a partir de node_modules
 public/engine/

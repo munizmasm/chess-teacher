@@ -10,8 +10,8 @@ export interface ConvertedLine {
 }
 
 /**
- * Converte uma sequência de lances UCI (PV do motor) em SAN + FENs,
- * partindo de `fenBefore`. Limita a `maxPlies`.
+ * Converts a sequence of UCI moves (engine PV) into SAN + FENs, starting from
+ * `fenBefore`. Capped at `maxPlies`.
  */
 export function uciToLine(fenBefore: string, uciMoves: string[], maxPlies = 10): ConvertedLine {
   const chess = new Chess(fenBefore)
@@ -34,7 +34,7 @@ export function uciToLine(fenBefore: string, uciMoves: string[], maxPlies = 10):
   return out
 }
 
-/** Formata avaliação (POV do usuário) em texto curto: +1.2 / -0.4 / M3 / -M2. */
+/** Formats an evaluation (user's POV) into short text: +1.2 / -0.4 / M3 / -M2. */
 export function formatEval(cp?: number, mate?: number): string {
   if (mate !== undefined && mate !== null) {
     return mate > 0 ? `M${mate}` : `-M${Math.abs(mate)}`
@@ -54,12 +54,12 @@ export function pieceCount(fen: string): number {
 }
 
 export function detectPhase(fen: string, moveNumber: number): Phase {
-  if (moveNumber <= 12) return 'abertura'
-  if (pieceCount(fen) <= 12) return 'final'
-  return 'meio-jogo'
+  if (moveNumber <= 12) return 'opening'
+  if (pieceCount(fen) <= 12) return 'endgame'
+  return 'middlegame'
 }
 
-/** Descrição curta de magnitude da perda (para a UI). */
+/** Short magnitude label for the loss (for the UI). */
 export function lossLabel(cpLoss?: number): string {
   if (cpLoss === undefined) return ''
   const p = Math.round(cpLoss) / 100

@@ -30,21 +30,21 @@ export default function SettingsScreen({
     setTest({ state: 'loading' })
     try {
       await pingApiKey(apiKey, model)
-      setTest({ state: 'ok', msg: 'Chave válida! ✅' })
+      setTest({ state: 'ok', msg: 'Valid key! ✅' })
     } catch (err) {
-      setTest({ state: 'err', msg: err instanceof Error ? err.message : 'Falhou.' })
+      setTest({ state: 'err', msg: err instanceof Error ? err.message : 'Failed.' })
     }
   }
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
       <div className="card flex flex-col gap-4">
-        <h1 className="text-xl font-semibold text-white">Configurações</h1>
+        <h1 className="text-xl font-semibold text-white">Settings</h1>
 
-        {/* Chave da API */}
+        {/* API key */}
         <div>
           <label className="mb-1 block text-sm font-medium text-ink-100/80">
-            Chave de API do Claude (Anthropic)
+            Claude API key (Anthropic)
           </label>
           <input
             type="password"
@@ -63,7 +63,7 @@ export default function SettingsScreen({
               disabled={!apiKey || test.state === 'loading'}
               onClick={handleTest}
             >
-              {test.state === 'loading' ? 'Testando…' : 'Testar chave'}
+              {test.state === 'loading' ? 'Testing…' : 'Test key'}
             </button>
             {test.msg && (
               <span className={`text-xs ${test.state === 'ok' ? 'text-accent-soft' : 'text-mark-missed'}`}>
@@ -72,7 +72,7 @@ export default function SettingsScreen({
             )}
           </div>
           <p className="mt-2 text-xs text-ink-100/50">
-            Pegue sua chave em{' '}
+            Get your key at{' '}
             <a
               href="https://console.anthropic.com/settings/keys"
               target="_blank"
@@ -81,14 +81,14 @@ export default function SettingsScreen({
             >
               console.anthropic.com
             </a>
-            . Ela fica salva <strong>só neste aparelho</strong> (localStorage) e nunca sai daqui a
-            não ser para a própria API da Anthropic.
+            . It is stored <strong>only on this device</strong> (localStorage) and never leaves it
+            except to Anthropic's own API.
           </p>
         </div>
 
-        {/* Modelo */}
+        {/* Model */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-ink-100/80">Modelo do Tutor</label>
+          <label className="mb-1 block text-sm font-medium text-ink-100/80">Tutor model</label>
           <div className="flex flex-col gap-2">
             {MODEL_OPTIONS.map((m) => (
               <label
@@ -111,10 +111,10 @@ export default function SettingsScreen({
           </div>
         </div>
 
-        {/* Profundidade do motor */}
+        {/* Engine depth */}
         <div>
           <label className="mb-1 block text-sm font-medium text-ink-100/80">
-            Profundidade do Stockfish: <span className="font-mono text-accent-soft">{engineDepth}</span>
+            Stockfish depth: <span className="font-mono text-accent-soft">{engineDepth}</span>
           </label>
           <input
             type="range"
@@ -125,23 +125,23 @@ export default function SettingsScreen({
             className="w-full accent-accent"
           />
           <p className="text-xs text-ink-100/50">
-            Mais profundidade = análise mais precisa, porém mais lenta (especialmente no celular).
+            More depth = more accurate analysis, but slower (especially on mobile).
           </p>
         </div>
       </div>
 
       <div className="card flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-medium text-white">Apagar histórico</div>
-          <div className="text-xs text-ink-100/50">Remove os jogos e padrões salvos neste aparelho.</div>
+          <div className="text-sm font-medium text-white">Clear history</div>
+          <div className="text-xs text-ink-100/50">Removes the games and patterns saved on this device.</div>
         </div>
         <button
           className="btn-ghost text-sm text-mark-missed"
           onClick={() => {
-            if (confirm('Apagar todos os jogos e padrões salvos neste aparelho?')) onClearData()
+            if (confirm('Clear all games and patterns saved on this device?')) onClearData()
           }}
         >
-          Apagar tudo
+          Clear all
         </button>
       </div>
     </div>

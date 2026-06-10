@@ -13,7 +13,7 @@ interface Props {
   onRefreshPatterns: () => void
 }
 
-const STUDY_CATS: Category[] = ['Imprecisão', 'Erro', 'Capivarada', 'Chance perdida']
+const STUDY_CATS: Category[] = ['Inaccuracy', 'Mistake', 'Blunder', 'Miss']
 
 export default function HistoryScreen({
   games,
@@ -26,36 +26,36 @@ export default function HistoryScreen({
 }: Props) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      {/* Focos de melhoria */}
+      {/* Improvement focuses */}
       <div className="card flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-white">🎯 Seus focos de melhoria</h1>
+          <h1 className="text-lg font-semibold text-white">🎯 Your improvement focuses</h1>
           <button
             className="btn-ghost text-xs"
             disabled={patternsLoading || apiKeyMissing || games.length === 0}
             onClick={onRefreshPatterns}
           >
-            {patternsLoading ? 'Analisando…' : 'Recalcular'}
+            {patternsLoading ? 'Analyzing…' : 'Recalculate'}
           </button>
         </div>
 
         {patternsLoading ? (
-          <Spinner label="Cruzando os padrões dos seus jogos…" />
-        ) : patterns && patterns.focos.length > 0 ? (
+          <Spinner label="Cross-referencing the patterns across your games…" />
+        ) : patterns && patterns.focuses.length > 0 ? (
           <div className="flex flex-col gap-3">
-            {patterns.resumo && <p className="text-sm text-ink-100/80">{patterns.resumo}</p>}
-            {patterns.focos.map((f, i) => (
+            {patterns.summary && <p className="text-sm text-ink-100/80">{patterns.summary}</p>}
+            {patterns.focuses.map((f, i) => (
               <div key={i} className="rounded-xl border border-white/10 bg-ink-900/60 p-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-white">{f.titulo}</span>
-                  {f.cor && f.cor !== 'ambas' && (
+                  <span className="font-semibold text-white">{f.title}</span>
+                  {f.color && f.color !== 'both' && (
                     <span className="chip bg-ink-700 text-ink-100/70">
-                      {f.cor === 'white' ? '⚪ brancas' : '⚫ pretas'}
+                      {f.color === 'white' ? '⚪ white' : '⚫ black'}
                     </span>
                   )}
                 </div>
                 <div className="mt-1 text-sm text-ink-100/80">
-                  <Markdown>{f.descricao}</Markdown>
+                  <Markdown>{f.description}</Markdown>
                 </div>
                 {f.tags.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
@@ -69,25 +69,25 @@ export default function HistoryScreen({
               </div>
             ))}
             <p className="text-[11px] text-ink-100/40">
-              Baseado nos últimos {patterns.baseadoEmJogos} jogos analisados.
+              Based on your last {patterns.basedOnGames} analyzed games.
             </p>
           </div>
         ) : (
           <p className="text-sm text-ink-100/60">
             {games.length === 0
-              ? 'Analise sua primeira partida para começar a montar seu diagnóstico.'
-              : 'Ainda sem padrões calculados. Clique em “Recalcular”.'}
+              ? 'Analyze your first game to start building your diagnosis.'
+              : 'No patterns computed yet. Click “Recalculate”.'}
           </p>
         )}
       </div>
 
-      {/* Lista de jogos */}
+      {/* Game list */}
       <div className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-medium uppercase tracking-wide text-ink-100/50">
-          Jogos analisados ({games.length}/30)
+          Analyzed games ({games.length}/30)
         </h2>
         {games.length === 0 && (
-          <div className="card text-sm text-ink-100/60">Nenhum jogo analisado ainda.</div>
+          <div className="card text-sm text-ink-100/60">No games analyzed yet.</div>
         )}
         {games.map((g) => (
           <GameRow key={g.id} game={g} onOpen={() => onOpen(g)} onDelete={() => onDelete(g.id)} />
@@ -108,9 +108,9 @@ function GameRow({
 }) {
   const counts = STUDY_CATS.map((c) => ({
     c,
-    n: game.pontos.filter((p) => p.category === c).length,
+    n: game.points.filter((p) => p.category === c).length,
   })).filter((x) => x.n > 0)
-  const opponent = game.corUsuario === 'white' ? game.meta.black : game.meta.white
+  const opponent = game.userColor === 'white' ? game.meta.black : game.meta.white
 
   return (
     <div className="card flex items-center justify-between gap-3">
@@ -118,11 +118,11 @@ function GameRow({
         <div className="flex items-center gap-2">
           <span className="truncate font-medium text-white">vs {opponent || '—'}</span>
           <span className="chip bg-ink-700 text-ink-100/70">
-            {game.corUsuario === 'white' ? '⚪' : '⚫'}
+            {game.userColor === 'white' ? '⚪' : '⚫'}
           </span>
         </div>
         <div className="mt-0.5 text-xs text-ink-100/50">
-          {game.meta.date ?? ''} · {game.meta.eco ?? '—'} · {game.pontos.length} ponto(s)
+          {game.meta.date ?? ''} · {game.meta.eco ?? '—'} · {game.points.length} point(s)
         </div>
         <div className="mt-1.5 flex flex-wrap gap-1">
           {counts.map((x) => (
@@ -135,14 +135,14 @@ function GameRow({
       </div>
       <div className="flex shrink-0 flex-col gap-1.5">
         <button className="btn-primary px-3 py-1.5 text-xs" onClick={onOpen}>
-          Abrir
+          Open
         </button>
         <button
           className="btn-ghost px-3 py-1.5 text-xs text-mark-missed"
           onClick={onDelete}
-          title="Excluir do histórico"
+          title="Remove from history"
         >
-          Excluir
+          Delete
         </button>
       </div>
     </div>

@@ -1,9 +1,8 @@
 import { parsePgn } from '@/lib/pgn'
 import { getEngine } from '@/lib/engine'
 import { detectPhase, uciToLine } from '@/lib/chessUtils'
-import { classify } from '@/lib/concepts'
+import { CONCEPT_TAGS, classify } from '@/lib/concepts'
 import { analyzePatterns, generateLesson, triageInaccuracies } from '@/lib/anthropic'
-import { CONCEPT_TAGS } from '@/lib/concepts'
 import type {
   AnalyzedGame,
   ClaudeModel,
@@ -59,7 +58,7 @@ function buildStudyPoints(parsed: ParsedGame, userColor: Color): StudyPoint[] {
 async function runEngineForPoint(point: StudyPoint, depth: number): Promise<void> {
   const engine = getEngine()
 
-  // Posição da decisão: o usuário está para jogar → score já é POV do usuário.
+  // Decision position: the user is to move → score is already the user's POV.
   const best = await engine.analyze(point.fenBefore, { depth })
   const line = uciToLine(point.fenBefore, best.pv, 10)
   point.evalBestCp = best.scoreCp
@@ -75,7 +74,7 @@ async function runEngineForPoint(point: StudyPoint, depth: number): Promise<void
     mate: best.mate,
   }
 
-  // Após o lance jogado: adversário a mover → inverte para POV do usuário.
+  // After the played move: opponent to move → flip to the user's POV.
   const played = await engine.analyze(point.fenAfter, { depth })
   if (played.mate !== undefined) {
     point.evalPlayedMate = -played.mate
@@ -108,9 +107,9 @@ function buildErrorTags(points: StudyPoint[], userColor: Color): ErrorTag[] {
   const tags: ErrorTag[] = []
   for (const p of points) {
     if (!p.lesson) continue
-    const fase = detectPhase(p.fenBefore, p.moveNumber)
-    for (const tag of p.lesson.tags_conceito) {
-      tags.push({ tag, categoria: p.category, fase, cor: userColor })
+    const phase = detectPhase(p.fenBefore, p.moveNumber)
+    for (const tag of p.lesson.conceptTags) {
+      tags.push({ tag, category: p.category, phase, color: userColor })
     }
   }
   return tags
@@ -119,27 +118,27 @@ function buildErrorTags(points: StudyPoint[], userColor: Color): ErrorTag[] {
 export async function analyzeGame(params: AnalyzeParams): Promise<AnalyzedGame> {
   const { pgn, userColor, apiKey, model, depth = 16, onProgress } = params
 
-  onProgress?.({ phase: 'parse', current: 0, total: 1, label: 'Lendo o PGN…' })
+  onProgress?.({ phase: 'parse', current: 0, total: 1, label: 'Reading the PGN…' })
   const parsed = parsePgn(pgn)
 
   if (!parsed.hasAnnotations) {
     throw new AnalysisError(
-      'Este PGN não tem os destaques do chess.com (imprecisão/erro/blunder). Cole o PGN da partida JÁ ANALISADA (com a Revisão do chess.com).',
+      'This PGN has no chess.com highlights (inaccuracy/mistake/blunder). Paste the PGN of the ALREADY ANALYZED game (with chess.com Game Review).',
     )
   }
 
   const allPoints = buildStudyPoints(parsed, userColor)
 
-  // Triagem: mantém Erro/Capivarada/Chance perdida; filtra imprecisões que são
-  // só sutilezas de motor (sem conceito humano claro), para não cansar o aluno.
-  const inaccuracies = allPoints.filter((p) => p.category === 'Imprecisão')
+  // Triage: always keep Mistake/Blunder/Miss; filter out inaccuracies that are
+  // only engine subtleties (no clear human concept), so we don't bore the user.
+  const inaccuracies = allPoints.filter((p) => p.category === 'Inaccuracy')
   let points = allPoints
   if (inaccuracies.length > 0) {
     onProgress?.({
       phase: 'triage',
       current: 0,
       total: 1,
-      label: 'Selecionando imprecisões que valem estudo…',
+      label: 'Selecting the inaccuracies worth studying…',
     })
     const keep = await triageInaccuracies(
       apiKey,
@@ -155,22 +154,22 @@ export async function analyzeGame(params: AnalyzeParams): Promise<AnalyzedGame> 
       userColor,
     )
     if (keep) {
-      points = allPoints.filter((p) => p.category !== 'Imprecisão' || keep.has(p.ply))
+      points = allPoints.filter((p) => p.category !== 'Inaccuracy' || keep.has(p.ply))
     }
   }
 
-  // Motor (sequencial — worker único)
+  // Engine (sequential — single worker)
   for (let k = 0; k < points.length; k++) {
     onProgress?.({
       phase: 'engine',
       current: k,
       total: points.length,
-      label: `Calculando a linha melhor (${k + 1}/${points.length})…`,
+      label: `Calculating the best line (${k + 1}/${points.length})…`,
     })
     await runEngineForPoint(points[k], depth)
   }
 
-  // Tutor (concorrência limitada)
+  // Tutor (bounded concurrency)
   let done = 0
   await forEachPool(points, 3, async (p) => {
     try {
@@ -183,25 +182,25 @@ export async function analyzeGame(params: AnalyzeParams): Promise<AnalyzedGame> 
         phase: 'tutor',
         current: done,
         total: points.length,
-        label: `Tutor preparando as explicações (${done}/${points.length})…`,
+        label: `Tutor preparing the explanations (${done}/${points.length})…`,
       })
     }
   })
 
-  onProgress?.({ phase: 'done', current: points.length, total: points.length, label: 'Pronto!' })
+  onProgress?.({ phase: 'done', current: points.length, total: points.length, label: 'Done!' })
 
   return {
     id: parsed.gameId,
-    importadoEm: Date.now(),
+    importedAt: Date.now(),
     meta: parsed.meta,
-    corUsuario: userColor,
+    userColor,
     pgn,
-    pontos: points,
-    tagsErro: buildErrorTags(points, userColor),
+    points,
+    errorTags: buildErrorTags(points, userColor),
   }
 }
 
-// ─── Padrões ─────────────────────────────────────────────────────────────────
+// ─── Patterns ────────────────────────────────────────────────────────────────
 
 export function aggregateTags(games: AnalyzedGame[]): TagAggregate[] {
   const map = new Map<string, TagAggregate>()
@@ -209,17 +208,17 @@ export function aggregateTags(games: AnalyzedGame[]): TagAggregate[] {
     map.set(tag, {
       tag,
       total: 0,
-      porCor: { white: 0, black: 0 },
-      porFase: { abertura: 0, 'meio-jogo': 0, final: 0 },
+      byColor: { white: 0, black: 0 },
+      byPhase: { opening: 0, middlegame: 0, endgame: 0 },
     })
   }
   for (const g of games) {
-    for (const t of g.tagsErro) {
+    for (const t of g.errorTags) {
       const a = map.get(t.tag)
       if (!a) continue
       a.total++
-      a.porCor[t.cor]++
-      a.porFase[t.fase]++
+      a.byColor[t.color]++
+      a.byPhase[t.phase]++
     }
   }
   return [...map.values()]

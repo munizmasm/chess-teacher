@@ -25,25 +25,25 @@ export default function StudyScreen({
   onSelectPoint,
   onClose,
 }: Props) {
-  if (game.pontos.length === 0) {
+  if (game.points.length === 0) {
     return (
       <div className="mx-auto max-w-xl">
         <div className="card flex flex-col items-center gap-4 text-center">
           <div className="text-4xl">🎉</div>
-          <h1 className="text-xl font-semibold text-white">Nenhum lance ruim seu neste jogo!</h1>
+          <h1 className="text-xl font-semibold text-white">No bad moves of yours in this game!</h1>
           <p className="text-sm text-ink-100/70">
-            O chess.com não marcou imprecisões, erros, blunders nem chances perdidas das suas peças
-            nesta partida. Mandou bem!
+            chess.com flagged no inaccuracies, mistakes, blunders or missed chances for your pieces
+            in this game. Nicely played!
           </p>
           <button className="btn-primary" onClick={onClose}>
-            Analisar outra partida
+            Analyze another game
           </button>
         </div>
       </div>
     )
   }
 
-  const point = game.pontos[pointIndex]
+  const point = game.points[pointIndex]
   return (
     <StudyPointView
       key={point.id}
@@ -80,7 +80,7 @@ function StudyPointView({
   useEffect(() => setStage(0), [point.id])
 
   const lesson = point.lesson
-  const catColor = categoryStyle(point.category).cor
+  const catColor = categoryStyle(point.category).color
 
   const board = useMemo(() => {
     let fen = point.fenBefore
@@ -89,16 +89,16 @@ function StudyPointView({
     let lastMove: { from: string; to: string } | undefined
 
     if (stage === 0) {
-      // Lição: mostra o lance jogado + os destaques do Tutor
-      const setas =
-        lesson?.destaques
-          .filter((d) => d.tipo === 'seta')
-          .map((d) => ({ from: (d as any).de, to: (d as any).para, color: highlightColor(d.cor) })) ?? []
-      arrows = [{ from: point.from, to: point.to, color: catColor }, ...setas]
+      // Lesson: show the played move + the Tutor's highlights
+      const moveArrows =
+        lesson?.highlights
+          .filter((d) => d.type === 'arrow')
+          .map((d) => ({ from: (d as any).from, to: (d as any).to, color: highlightColor(d.color) })) ?? []
+      arrows = [{ from: point.from, to: point.to, color: catColor }, ...moveArrows]
       highlights =
-        lesson?.destaques
-          .filter((d) => d.tipo === 'casa')
-          .map((d) => ({ square: (d as any).casa, color: highlightColor(d.cor) })) ?? []
+        lesson?.highlights
+          .filter((d) => d.type === 'square')
+          .map((d) => ({ square: (d as any).square, color: highlightColor(d.color) })) ?? []
     } else if (line) {
       const j = stage - 1
       fen = line.fens[j]
@@ -108,43 +108,43 @@ function StudyPointView({
     return { fen, arrows, highlights, lastMove }
   }, [stage, point, line, lesson, catColor])
 
-  const stageLabel = stage === 0 ? '💡 Lição' : `♟️ Linha melhor (${stage}/${L})`
+  const stageLabel = stage === 0 ? '💡 Lesson' : `♟️ Best line (${stage}/${L})`
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
-      {/* Cabeçalho do jogo */}
+      {/* Game header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <h1 className="truncate text-lg font-semibold text-white">
             {game.meta.white} <span className="text-ink-100/40">vs</span> {game.meta.black}
           </h1>
           <p className="text-xs text-ink-100/60">
-            Você de {game.corUsuario === 'white' ? 'Brancas ⚪' : 'Pretas ⚫'}
+            You as {game.userColor === 'white' ? 'White ⚪' : 'Black ⚫'}
             {game.meta.eco ? ` · ${game.meta.eco}` : ''}
             {game.meta.result ? ` · ${game.meta.result}` : ''}
           </p>
         </div>
         <button className="btn-ghost text-sm" onClick={onClose}>
-          ✕ Sair
+          ✕ Exit
         </button>
       </div>
 
       {duplicate && (
         <div className="rounded-lg border border-mark-excellent/30 bg-mark-excellent/10 p-2.5 text-xs text-mark-excellent">
-          ℹ️ Esta partida já tinha sido analisada — abri o estudo salvo (não contabilizei de novo).
+          ℹ️ This game was already analyzed — opened the saved study (not counted again).
         </div>
       )}
 
-      {/* Faixa de pontos */}
-      <PointStrip points={game.pontos} current={pointIndex} onSelect={onSelectPoint} />
+      {/* Points strip */}
+      <PointStrip points={game.points} current={pointIndex} onSelect={onSelectPoint} />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] lg:items-start">
-        {/* Coluna tabuleiro — principal e fixa no desktop */}
+        {/* Board column — primary and pinned on desktop */}
         <div className="flex flex-col gap-3 lg:sticky lg:top-16 lg:self-start">
           <div className="mx-auto w-full max-w-[600px]">
             <Board
               fen={board.fen}
-              orientation={game.corUsuario}
+              orientation={game.userColor}
               arrows={board.arrows}
               highlights={board.highlights}
               lastMove={board.lastMove}
@@ -152,29 +152,24 @@ function StudyPointView({
             />
           </div>
 
-          {/* Avaliações */}
+          {/* Evaluations */}
           <div className="flex items-center justify-center gap-2">
             <EvalBadge
               cp={point.evalPlayedCp}
               mate={point.evalPlayedMate}
-              label="Seu lance"
+              label="Your move"
               tone="bad"
             />
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-ink-100/50">perda</div>
+              <div className="text-[10px] uppercase tracking-wide text-ink-100/50">loss</div>
               <div className="font-mono text-sm font-semibold text-mark-missed">
                 {lossLabel(point.cpLoss) || '—'}
               </div>
             </div>
-            <EvalBadge
-              cp={point.evalBestCp}
-              mate={point.evalBestMate}
-              label="Melhor"
-              tone="good"
-            />
+            <EvalBadge cp={point.evalBestCp} mate={point.evalBestMate} label="Best" tone="good" />
           </div>
 
-          {/* Controles de estágio */}
+          {/* Stage controls */}
           <div className="flex items-center justify-between gap-2">
             <button
               className="btn-ghost"
@@ -194,12 +189,12 @@ function StudyPointView({
           </div>
         </div>
 
-        {/* Coluna Tutor */}
+        {/* Tutor column */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <CategoryChip category={point.category} />
             <span className="text-sm text-ink-100/70">
-              Lance {point.moveNumber}: você jogou <strong className="text-white">{point.san}</strong>
+              Move {point.moveNumber}: you played <strong className="text-white">{point.san}</strong>
             </span>
           </div>
 
@@ -209,26 +204,26 @@ function StudyPointView({
             <BestLineMoves
               sanMoves={line.sanMoves}
               startMoveNumber={point.moveNumber}
-              startColor={game.corUsuario}
+              startColor={game.userColor}
               activeIndex={stage >= 1 ? stage - 1 : -1}
               onPick={(i) => setStage(i + 1)}
             />
           )}
 
-          {/* Navegação entre pontos */}
+          {/* Point navigation */}
           <div className="mt-1 flex items-center justify-between gap-2 border-t border-white/5 pt-3">
             <button className="btn-ghost text-sm" disabled={pointIndex === 0} onClick={onPrevPoint}>
-              ◀ Ponto anterior
+              ◀ Previous point
             </button>
             <span className="text-xs text-ink-100/50">
-              {pointIndex + 1} / {game.pontos.length}
+              {pointIndex + 1} / {game.points.length}
             </span>
             <button
               className="btn-primary text-sm"
-              disabled={pointIndex >= game.pontos.length - 1}
+              disabled={pointIndex >= game.points.length - 1}
               onClick={onNextPoint}
             >
-              Próximo ponto ▶
+              Next point ▶
             </button>
           </div>
         </div>
@@ -254,12 +249,12 @@ function TutorPanel({
     return (
       <div className="card text-sm">
         <p className="text-mark-missed">
-          ⚠️ Não consegui gerar a explicação do Tutor para este lance
+          ⚠️ Couldn't generate the Tutor's explanation for this move
           {point.lessonError ? `: ${point.lessonError}` : '.'}
         </p>
         {point.bestLine && (
           <p className="mt-2 text-ink-100/70">
-            Mas você ainda pode navegar pela linha melhor do motor com os controles ◀ ▶.
+            You can still step through the engine's best line with the ◀ ▶ controls.
           </p>
         )}
       </div>
@@ -269,26 +264,26 @@ function TutorPanel({
   if (stage === 0) {
     return (
       <div className="card flex flex-col gap-3">
-        <Markdown>{lesson.resposta}</Markdown>
+        <Markdown>{lesson.answer}</Markdown>
         {L > 0 && (
           <button className="btn-primary self-start text-sm" onClick={onShowLine}>
-            Ver a linha melhor ▶
+            See the best line ▶
           </button>
         )}
       </div>
     )
   }
 
-  // Estágio de variação
+  // Variation stage
   const j = stage - 1
-  const step = lesson.variacao[j]
-  const nota = step?.nota || `Lance ${point.bestLine?.sanMoves[j] ?? ''}.`
+  const step = lesson.variation[j]
+  const note = step?.note || `Move ${point.bestLine?.sanMoves[j] ?? ''}.`
   return (
     <div className="card flex flex-col gap-2">
       <div className="text-sm font-semibold text-accent-soft">
-        {point.bestLine?.sanMoves[j] ?? step?.lance}
+        {point.bestLine?.sanMoves[j] ?? step?.move}
       </div>
-      <Markdown>{nota}</Markdown>
+      <Markdown>{note}</Markdown>
     </div>
   )
 }
@@ -315,8 +310,8 @@ function PointStrip({
               active ? 'border-accent bg-accent/15 text-white' : 'border-white/10 bg-ink-700 text-ink-100/70'
             }`}
           >
-            <span className="font-mono font-bold" style={{ color: s.cor }}>
-              {s.marcador}
+            <span className="font-mono font-bold" style={{ color: s.color }}>
+              {s.marker}
             </span>
             <span>
               {p.moveNumber}. {p.san}
@@ -341,7 +336,7 @@ function BestLineMoves({
   activeIndex: number
   onPick: (i: number) => void
 }) {
-  // Numeração dos lances a partir da posição do erro.
+  // Move numbering starting from the mistake position.
   let moveNum = startMoveNumber
   let whiteToMove = startColor === 'white'
   const tokens = sanMoves.map((san, i) => {
@@ -356,9 +351,7 @@ function BestLineMoves({
 
   return (
     <div className="card">
-      <div className="mb-1 text-xs font-medium uppercase tracking-wide text-ink-100/50">
-        Linha melhor
-      </div>
+      <div className="mb-1 text-xs font-medium uppercase tracking-wide text-ink-100/50">Best line</div>
       <div className="flex flex-wrap gap-x-1 gap-y-1 text-sm">
         {tokens.map((t) => (
           <span key={t.i} className="flex items-center gap-1">

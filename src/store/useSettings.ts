@@ -12,9 +12,9 @@ interface SettingsState {
 }
 
 export const MODEL_OPTIONS: { value: ClaudeModel; label: string; hint: string }[] = [
-  { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', hint: 'Equilíbrio (recomendado)' },
-  { value: 'claude-opus-4-8', label: 'Claude Opus 4.8', hint: 'Explicações mais profundas' },
-  { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5', hint: 'Mais rápido e barato' },
+  { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', hint: 'Balanced (recommended)' },
+  { value: 'claude-opus-4-8', label: 'Claude Opus 4.8', hint: 'Deeper explanations' },
+  { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5', hint: 'Faster and cheaper' },
 ]
 
 export const useSettings = create<SettingsState>()(

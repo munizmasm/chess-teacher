@@ -19,12 +19,12 @@ export default defineConfig({
       manifest: {
         name: 'Chess Teacher',
         short_name: 'Chess Teacher',
-        description: 'Tutor de xadrez que explica os porquês das suas jogadas.',
+        description: 'A chess tutor that explains the why behind your moves.',
         theme_color: '#1a1f1a',
         background_color: '#1a1f1a',
         display: 'standalone',
         orientation: 'portrait',
-        lang: 'pt-BR',
+        lang: 'en',
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },

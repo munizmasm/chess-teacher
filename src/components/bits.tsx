@@ -1,12 +1,12 @@
 import type { Category } from '@/types'
 import { formatEval } from '@/lib/chessUtils'
 
-const CATEGORY_STYLE: Record<Category, { marcador: string; cor: string }> = {
-  Imprecisão: { marcador: '?!', cor: '#f5c542' },
-  Erro: { marcador: '?', cor: '#e8862e' },
-  Capivarada: { marcador: '??', cor: '#b33430' },
-  'Chance perdida': { marcador: 'X', cor: '#e06666' },
-  Excelente: { marcador: '!', cor: '#5b9bd5' },
+const CATEGORY_STYLE: Record<Category, { marker: string; color: string }> = {
+  Inaccuracy: { marker: '?!', color: '#f5c542' },
+  Mistake: { marker: '?', color: '#e8862e' },
+  Blunder: { marker: '??', color: '#b33430' },
+  Miss: { marker: 'X', color: '#e06666' },
+  Excellent: { marker: '!', color: '#5b9bd5' },
 }
 
 export function categoryStyle(c: Category) {
@@ -18,16 +18,16 @@ export function CategoryChip({ category, size = 'md' }: { category: Category; si
   return (
     <span
       className={`chip ${size === 'sm' ? 'text-[10px]' : 'text-xs'}`}
-      style={{ backgroundColor: `${s.cor}22`, color: s.cor, border: `1px solid ${s.cor}55` }}
+      style={{ backgroundColor: `${s.color}22`, color: s.color, border: `1px solid ${s.color}55` }}
     >
-      <span className="font-mono font-bold">{s.marcador}</span>
+      <span className="font-mono font-bold">{s.marker}</span>
       {category}
     </span>
   )
 }
 
 export function Legend() {
-  const items: Category[] = ['Excelente', 'Imprecisão', 'Erro', 'Chance perdida', 'Capivarada']
+  const items: Category[] = ['Excellent', 'Inaccuracy', 'Mistake', 'Miss', 'Blunder']
   return (
     <div className="flex flex-wrap gap-1.5">
       {items.map((c) => (

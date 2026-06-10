@@ -16,8 +16,8 @@ export default function AnalyzingScreen({ progress }: { progress: AnalyzeProgres
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-5">
       <div className="card flex flex-col gap-5">
-        <h1 className="text-xl font-semibold text-white">Analisando sua partida…</h1>
-        <Spinner label={progress?.label ?? 'Preparando…'} />
+        <h1 className="text-xl font-semibold text-white">Analyzing your game…</h1>
+        <Spinner label={progress?.label ?? 'Getting ready…'} />
         <div className="h-3 w-full overflow-hidden rounded-full bg-ink-700">
           <div
             className="h-full rounded-full bg-accent transition-all duration-300"
@@ -26,17 +26,17 @@ export default function AnalyzingScreen({ progress }: { progress: AnalyzeProgres
         </div>
         <ol className="space-y-2 text-sm text-ink-100/70">
           <Step done={value >= 8} active={progress?.phase === 'parse' || progress?.phase === 'triage'}>
-            Lendo o PGN e selecionando os lances que valem estudo
+            Reading the PGN and selecting the moves worth studying
           </Step>
           <Step done={value >= 50} active={progress?.phase === 'engine'}>
-            Calculando a linha melhor com o Stockfish
+            Calculating the best line with Stockfish
           </Step>
           <Step done={value >= 100} active={progress?.phase === 'tutor'}>
-            Tutor preparando as explicações
+            Tutor preparing the explanations
           </Step>
         </ol>
         <p className="text-xs text-ink-100/50">
-          A primeira análise carrega o motor (~7&nbsp;MB) — depois fica em cache e roda offline.
+          The first analysis loads the engine (~7&nbsp;MB) — then it's cached and runs offline.
         </p>
       </div>
     </div>

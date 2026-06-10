@@ -1,5 +1,5 @@
-// Copia o motor Stockfish (lite single-threaded) de node_modules para public/engine.
-// Roda no postinstall e via `npm run setup-engine`.
+// Copies the Stockfish engine (lite single-threaded) from node_modules to public/engine.
+// Runs on postinstall and via `npm run setup-engine`.
 import { mkdir, copyFile, access } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -22,7 +22,7 @@ async function exists(p) {
 
 async function main() {
   if (!(await exists(src))) {
-    console.warn('[copy-engine] node_modules/stockfish/bin não encontrado — pulei a cópia.')
+    console.warn('[copy-engine] node_modules/stockfish/bin not found — skipped the copy.')
     return
   }
   await mkdir(dest, { recursive: true })
@@ -33,6 +33,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('[copy-engine] falhou:', err)
+  console.error('[copy-engine] failed:', err)
   process.exitCode = 1
 })

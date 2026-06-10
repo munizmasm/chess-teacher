@@ -1,4 +1,4 @@
-// PGN de exemplo (Play vs Coach) — usuário jogou de PRETAS (MunizMASM).
+// Sample PGN (Play vs Coach) — the user played BLACK (MunizMASM).
 export const SAMPLE_PGN = `[Event "Play vs Coach"]
 [Site "Chess.com"]
 [Date "2026.06.04"]

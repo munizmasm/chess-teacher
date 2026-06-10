@@ -2,7 +2,7 @@ import { createStore, get, set, del } from 'idb-keyval'
 import type { AnalyzedGame, PatternAnalysis } from '@/types'
 
 // ───────────────────────────────────────────────────────────────────────────
-// Persistência local (IndexedDB). Sem backend, sem DB pago.
+// Local persistence (IndexedDB). No backend, no paid database.
 // ───────────────────────────────────────────────────────────────────────────
 
 const store = createStore('chess-teacher', 'kv')
@@ -26,8 +26,8 @@ export interface SaveResult {
 }
 
 /**
- * Salva um jogo no ring buffer (máx. 30, mais recente primeiro).
- * Se o ID já existir, NÃO recontabiliza — devolve o jogo existente.
+ * Saves a game into the ring buffer (max 30, most recent first).
+ * If the id already exists, does NOT recount — returns the existing game.
  */
 export async function saveGame(game: AnalyzedGame): Promise<SaveResult> {
   const games = await getGames()

@@ -33,12 +33,12 @@ export const useApp = create<AppState>((set, get) => ({
   setPointIndex: (i) => {
     const g = get().activeGame
     if (!g) return
-    set({ currentPointIndex: Math.max(0, Math.min(i, g.pontos.length - 1)) })
+    set({ currentPointIndex: Math.max(0, Math.min(i, g.points.length - 1)) })
   },
   nextPoint: () => {
     const { activeGame, currentPointIndex } = get()
     if (!activeGame) return
-    set({ currentPointIndex: Math.min(currentPointIndex + 1, activeGame.pontos.length - 1) })
+    set({ currentPointIndex: Math.min(currentPointIndex + 1, activeGame.points.length - 1) })
   },
   prevPoint: () => {
     const { currentPointIndex } = get()

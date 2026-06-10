@@ -2,7 +2,7 @@ import { Chess } from 'chess.js'
 import type { Classification, Color, GameMeta, ParsedGame, ParsedMove } from '@/types'
 
 // ───────────────────────────────────────────────────────────────────────────
-// Parser de PGN do chess.com (com destaques c_effect / NAGs)
+// chess.com PGN parser (with c_effect highlights / NAGs)
 // ───────────────────────────────────────────────────────────────────────────
 
 const HEADER_LINE = /^\s*\[\s*\w+\s+"[^"]*"\s*\]\s*$/
@@ -37,7 +37,7 @@ interface RawMove {
   comment?: string
 }
 
-/** Extrai os cabeçalhos `[Tag "valor"]`. */
+/** Extracts the `[Tag "value"]` headers. */
 function parseHeaders(pgn: string): Record<string, string> {
   const headers: Record<string, string> = {}
   for (const m of pgn.matchAll(HEADER_RE)) {
@@ -46,7 +46,7 @@ function parseHeaders(pgn: string): Record<string, string> {
   return headers
 }
 
-/** Remove as linhas de cabeçalho, devolvendo só o movetext. */
+/** Removes the header lines, returning only the movetext. */
 function extractMovetext(pgn: string): string {
   return pgn
     .split(/\r?\n/)
@@ -55,7 +55,7 @@ function extractMovetext(pgn: string): string {
     .trim()
 }
 
-/** Remove variações entre parênteses (não usamos as linhas alternativas do PGN). */
+/** Removes parenthesized variations (we don't use the PGN's alternative lines). */
 function stripVariations(movetext: string): string {
   let prev: string
   let cur = movetext
@@ -69,7 +69,7 @@ function stripVariations(movetext: string): string {
 const TOKEN_RE =
   /(\{[^}]*\})|(\$\d+)|(\d+\.(?:\.\.)?)|(1-0|0-1|1\/2-1\/2|\*)|([^\s{}()]+)/g
 
-/** Tokeniza o movetext em lances com NAG e comentário associados. */
+/** Tokenizes the movetext into moves with their associated NAG and comment. */
 function tokenizeMovetext(movetext: string): RawMove[] {
   const clean = stripVariations(movetext)
   const moves: RawMove[] = []
@@ -77,7 +77,7 @@ function tokenizeMovetext(movetext: string): RawMove[] {
 
   for (const m of clean.matchAll(TOKEN_RE)) {
     if (m[1]) {
-      // comentário {...}
+      // comment {...}
       if (cur) {
         const inner = m[1].slice(1, -1).trim()
         cur.comment = cur.comment ? `${cur.comment} ${inner}` : inner
@@ -86,7 +86,7 @@ function tokenizeMovetext(movetext: string): RawMove[] {
       // NAG $n
       if (cur && cur.nag === undefined) cur.nag = parseInt(m[2].slice(1), 10)
     } else if (m[3] || m[4]) {
-      // número do lance ou resultado → ignora
+      // move number or result → ignore
       continue
     } else if (m[5]) {
       const san = m[5].replace(/[!?]+$/, '').trim()
@@ -98,7 +98,7 @@ function tokenizeMovetext(movetext: string): RawMove[] {
   return moves
 }
 
-/** Lê todos os efeitos `[%c_effect ...]` de um comentário → mapa casa → tipo. */
+/** Reads all `[%c_effect ...]` entries from a comment → map of square → type. */
 function parseCEffect(comment?: string): Map<string, Classification> {
   const out = new Map<string, Classification>()
   if (!comment) return out
@@ -116,18 +116,18 @@ function parseCEffect(comment?: string): Map<string, Classification> {
   return out
 }
 
-/** Deriva a classificação do lance a partir do c_effect (preferencial) ou NAG. */
+/** Derives the move classification from c_effect (preferred) or NAG. */
 function deriveClassification(raw: RawMove, toSquare: string): Classification | undefined {
   const effects = parseCEffect(raw.comment)
   const bySquare = effects.get(toSquare)
   if (bySquare) return bySquare
-  // Se houver exatamente um efeito, assume que é o do lance.
+  // If there is exactly one effect, assume it belongs to this move.
   if (effects.size === 1) return [...effects.values()][0]
   if (raw.nag !== undefined && NAG_TO_CLASS[raw.nag]) return NAG_TO_CLASS[raw.nag]
   return undefined
 }
 
-/** Hash estável (FNV-1a) para fallback de ID. */
+/** Stable hash (FNV-1a) for the id fallback. */
 function fnv1a(str: string): string {
   let h = 0x811c9dc5
   for (let i = 0; i < str.length; i++) {
@@ -150,8 +150,8 @@ function deriveGameId(headers: Record<string, string>, movetext: string): string
 function buildMeta(h: Record<string, string>): GameMeta {
   return {
     event: h.Event,
-    white: h.White ?? 'Brancas',
-    black: h.Black ?? 'Pretas',
+    white: h.White ?? 'White',
+    black: h.Black ?? 'Black',
     date: h.Date ?? h.UTCDate,
     eco: h.ECO,
     ecoUrl: h.ECOUrl,
@@ -164,19 +164,19 @@ function buildMeta(h: Record<string, string>): GameMeta {
 }
 
 /**
- * Faz o parse completo do PGN: cabeçalhos, lances (com FEN antes/depois),
- * classificações e ID do jogo.
+ * Full PGN parse: headers, moves (with fen before/after), classifications and
+ * game id.
  */
 export function parsePgn(pgn: string): ParsedGame {
   const trimmed = pgn.trim()
-  if (!trimmed) throw new PgnError('Cole um PGN para analisar.')
+  if (!trimmed) throw new PgnError('Paste a PGN to analyze.')
 
   const headers = parseHeaders(trimmed)
   const movetext = extractMovetext(trimmed)
-  if (!movetext) throw new PgnError('Não encontrei lances no PGN.')
+  if (!movetext) throw new PgnError('No moves found in the PGN.')
 
   const rawMoves = tokenizeMovetext(movetext)
-  if (rawMoves.length === 0) throw new PgnError('Não consegui ler os lances deste PGN.')
+  if (rawMoves.length === 0) throw new PgnError("Couldn't read the moves from this PGN.")
 
   const chess = new Chess()
   const moves: ParsedMove[] = []
@@ -189,7 +189,7 @@ export function parsePgn(pgn: string): ParsedGame {
       mv = chess.move(raw.san)
     } catch {
       throw new PgnError(
-        `Lance inválido no PGN: "${raw.san}" (lance ${Math.ceil((i + 1) / 2)}). Verifique se colou o PGN completo.`,
+        `Invalid move in PGN: "${raw.san}" (move ${Math.ceil((i + 1) / 2)}). Make sure you pasted the full PGN.`,
       )
     }
     const classification = deriveClassification(raw, mv.to)
@@ -217,7 +217,7 @@ export function parsePgn(pgn: string): ParsedGame {
   }
 }
 
-/** Tenta inferir a cor do usuário pelo nome (compara com White/Black). */
+/** Tries to infer the user's color from the username (matches White/Black). */
 export function guessUserColor(meta: GameMeta, username?: string): Color | undefined {
   if (!username) return undefined
   const u = username.trim().toLowerCase()

@@ -14,9 +14,9 @@ import {
 } from '@/lib/prompts'
 
 // ───────────────────────────────────────────────────────────────────────────
-// Cliente da Messages API da Anthropic via fetch direto do browser.
-// (Evitamos o SDK porque a v0.100 empacota ferramentas Node-only que quebram o
-//  bundle de browser. Aqui usamos só o endpoint que precisamos.)
+// Anthropic Messages API client via direct fetch from the browser.
+// (We avoid the SDK because v0.100 bundles Node-only tooling that breaks the
+//  browser build. We only use the one endpoint we need here.)
 // ───────────────────────────────────────────────────────────────────────────
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
@@ -70,18 +70,17 @@ export class ApiError extends Error {
 
 function friendlyError(err: unknown): Error {
   if (err instanceof ApiError) {
-    if (err.status === 401) return new Error('Chave de API inválida. Confira em Configurações.')
-    if (err.status === 429)
-      return new Error('Limite de requisições atingido. Aguarde um pouco e tente de novo.')
-    if (err.status === 529) return new Error('A API está sobrecarregada agora. Tente novamente em instantes.')
-    return new Error(`Erro da API Anthropic (${err.status}): ${err.message}`)
+    if (err.status === 401) return new Error('Invalid API key. Check it in Settings.')
+    if (err.status === 429) return new Error('Rate limit reached. Wait a moment and try again.')
+    if (err.status === 529) return new Error('The API is overloaded right now. Try again shortly.')
+    return new Error(`Anthropic API error (${err.status}): ${err.message}`)
   }
   if (err instanceof TypeError) {
-    // fetch lança TypeError em falha de rede/CORS
-    return new Error('Falha de rede ao falar com a API (verifique sua conexão).')
+    // fetch throws a TypeError on network/CORS failure
+    return new Error('Network error talking to the API (check your connection).')
   }
   if (err instanceof Error) return err
-  return new Error('Erro desconhecido ao falar com o Tutor.')
+  return new Error('Unknown error talking to the Tutor.')
 }
 
 async function createMessage(params: CreateParams): Promise<AnthropicMessage> {
@@ -102,7 +101,7 @@ async function createMessage(params: CreateParams): Promise<AnthropicMessage> {
       const j = (await res.json()) as { error?: { message?: string } }
       detail = j?.error?.message ?? ''
     } catch {
-      /* corpo não-JSON */
+      /* non-JSON body */
     }
     throw new ApiError(res.status, detail || res.statusText)
   }
@@ -115,34 +114,34 @@ function extractToolInput<T>(msg: AnthropicMessage, toolName: string): T {
       return (block as { input: unknown }).input as T
     }
   }
-  throw new Error('O Tutor não retornou uma resposta estruturada.')
+  throw new Error('The Tutor did not return a structured response.')
 }
 
 interface RawLesson {
-  categoria?: string
-  tags_conceito?: string[]
-  resposta?: string
-  variacao?: { lance?: string; nota?: string }[]
-  destaques?: { tipo?: string; de?: string; para?: string; casa?: string; cor?: string }[]
+  category?: string
+  conceptTags?: string[]
+  answer?: string
+  variation?: { move?: string; note?: string }[]
+  highlights?: { type?: string; from?: string; to?: string; square?: string; color?: string }[]
 }
 
-function normalizeLesson(raw: RawLesson, fallbackCategoria: string): Lesson {
+function normalizeLesson(raw: RawLesson, fallbackCategory: string): Lesson {
   return {
-    categoria: raw.categoria ?? fallbackCategoria,
-    tags_conceito: Array.isArray(raw.tags_conceito) ? raw.tags_conceito.slice(0, 2) : [],
-    resposta: raw.resposta ?? '',
-    variacao: Array.isArray(raw.variacao)
-      ? raw.variacao.map((v) => ({ lance: v.lance ?? '', nota: v.nota ?? '' }))
+    category: raw.category ?? fallbackCategory,
+    conceptTags: Array.isArray(raw.conceptTags) ? raw.conceptTags.slice(0, 2) : [],
+    answer: raw.answer ?? '',
+    variation: Array.isArray(raw.variation)
+      ? raw.variation.map((v) => ({ move: v.move ?? '', note: v.note ?? '' }))
       : [],
-    destaques: Array.isArray(raw.destaques)
-      ? raw.destaques
-          .filter((d) => d.tipo === 'seta' || d.tipo === 'casa')
+    highlights: Array.isArray(raw.highlights)
+      ? raw.highlights
+          .filter((d) => d.type === 'arrow' || d.type === 'square')
           .map((d) =>
-            d.tipo === 'seta'
-              ? { tipo: 'seta' as const, de: d.de ?? '', para: d.para ?? '', cor: d.cor }
-              : { tipo: 'casa' as const, casa: d.casa ?? '', cor: d.cor },
+            d.type === 'arrow'
+              ? { type: 'arrow' as const, from: d.from ?? '', to: d.to ?? '', color: d.color }
+              : { type: 'square' as const, square: d.square ?? '', color: d.color },
           )
-          .filter((d) => (d.tipo === 'seta' ? d.de && d.para : d.casa))
+          .filter((d) => (d.type === 'arrow' ? d.from && d.to : d.square))
       : [],
   }
 }
@@ -158,7 +157,7 @@ export async function generateLesson(
     const msg = await createMessage({
       apiKey,
       model,
-      max_tokens: 2500,
+      max_tokens: 2000,
       system: [{ type: 'text', text: LESSON_SYSTEM, cache_control: { type: 'ephemeral' } }],
       tools: [LESSON_TOOL],
       tool_choice: { type: 'tool', name: LESSON_TOOL.name },
@@ -171,15 +170,15 @@ export async function generateLesson(
 }
 
 interface RawPatterns {
-  resumo?: string
-  focos?: { titulo?: string; descricao?: string; tags?: string[]; cor?: string }[]
+  summary?: string
+  focuses?: { title?: string; description?: string; tags?: string[]; color?: string }[]
 }
 
 export async function analyzePatterns(
   apiKey: string,
   model: ClaudeModel,
   agg: TagAggregate[],
-  totalJogos: number,
+  totalGames: number,
 ): Promise<PatternAnalysis> {
   try {
     const msg = await createMessage({
@@ -189,19 +188,19 @@ export async function analyzePatterns(
       system: [{ type: 'text', text: PATTERN_SYSTEM, cache_control: { type: 'ephemeral' } }],
       tools: [PATTERN_TOOL],
       tool_choice: { type: 'tool', name: PATTERN_TOOL.name },
-      messages: [{ role: 'user', content: buildPatternUserMessage(agg, totalJogos) }],
+      messages: [{ role: 'user', content: buildPatternUserMessage(agg, totalGames) }],
     })
     const raw = extractToolInput<RawPatterns>(msg, PATTERN_TOOL.name)
     return {
-      geradoEm: Date.now(),
-      baseadoEmJogos: totalJogos,
-      resumo: raw.resumo ?? '',
-      focos: Array.isArray(raw.focos)
-        ? raw.focos.map((f) => ({
-            titulo: f.titulo ?? '',
-            descricao: f.descricao ?? '',
+      generatedAt: Date.now(),
+      basedOnGames: totalGames,
+      summary: raw.summary ?? '',
+      focuses: Array.isArray(raw.focuses)
+        ? raw.focuses.map((f) => ({
+            title: f.title ?? '',
+            description: f.description ?? '',
             tags: Array.isArray(f.tags) ? f.tags : [],
-            cor: (f.cor as PatternAnalysis['focos'][number]['cor']) ?? 'ambas',
+            color: (f.color as PatternAnalysis['focuses'][number]['color']) ?? 'both',
           }))
         : [],
     }
@@ -211,12 +210,12 @@ export async function analyzePatterns(
 }
 
 interface RawTriage {
-  decisoes?: { ply?: number; estudar?: boolean }[]
+  decisions?: { ply?: number; study?: boolean }[]
 }
 
 /**
- * Triagem das imprecisões: devolve o conjunto de `ply` que VALEM virar lição
- * (quebram conceito claro). Em caso de erro, devolve null (caller mantém todas).
+ * Inaccuracy triage: returns the set of `ply` values that are WORTH studying
+ * (they break a clear concept). On error, returns null (caller keeps them all).
  */
 export async function triageInaccuracies(
   apiKey: string,
@@ -238,8 +237,8 @@ export async function triageInaccuracies(
     })
     const raw = extractToolInput<RawTriage>(msg, TRIAGE_TOOL.name)
     const keep = new Set<number>()
-    for (const d of raw.decisoes ?? []) {
-      if (typeof d.ply === 'number' && d.estudar) keep.add(d.ply)
+    for (const d of raw.decisions ?? []) {
+      if (typeof d.ply === 'number' && d.study) keep.add(d.ply)
     }
     return keep
   } catch {
@@ -247,7 +246,7 @@ export async function triageInaccuracies(
   }
 }
 
-/** Validação leve da chave (chamada mínima). */
+/** Lightweight API key validation (minimal call). */
 export async function pingApiKey(apiKey: string, model: ClaudeModel): Promise<void> {
   try {
     await createMessage({

@@ -6,9 +6,9 @@ interface Props {
 }
 
 const TABS: { v: View; label: string; icon: string }[] = [
-  { v: 'import', label: 'Importar', icon: '➕' },
-  { v: 'history', label: 'Histórico', icon: '📊' },
-  { v: 'settings', label: 'Config', icon: '⚙️' },
+  { v: 'import', label: 'Import', icon: '➕' },
+  { v: 'history', label: 'History', icon: '📊' },
+  { v: 'settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export default function Header({ view, onNav }: Props) {

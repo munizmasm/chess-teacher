@@ -1,6 +1,6 @@
 // ───────────────────────────────────────────────────────────────────────────
-// Wrapper do Stockfish (WASM lite single-threaded) rodando em Web Worker.
-// Protocolo UCI. Análises são serializadas por uma fila interna.
+// Stockfish wrapper (WASM lite single-threaded) running in a Web Worker.
+// UCI protocol. Analyses are serialized through an internal queue.
 // ───────────────────────────────────────────────────────────────────────────
 
 export interface AnalyzeOptions {
@@ -8,11 +8,11 @@ export interface AnalyzeOptions {
 }
 
 export interface RawAnalysis {
-  bestmove: string // UCI (ex.: "d2d4")
-  pv: string[] // sequência UCI
+  bestmove: string // UCI (e.g. "d2d4")
+  pv: string[] // UCI sequence
   depth: number
-  scoreCp?: number // POV de quem joga (lado a mover)
-  mate?: number // POV de quem joga
+  scoreCp?: number // POV of the side to move
+  mate?: number // POV of the side to move
 }
 
 type LineListener = (line: string) => void
@@ -41,7 +41,7 @@ export class Engine {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.off(onLine)
-        reject(new Error('Tempo esgotado aguardando o motor.'))
+        reject(new Error('Timed out waiting for the engine.'))
       }, timeoutMs)
       const onLine: LineListener = (line) => {
         if (predicate(line)) {
@@ -64,7 +64,7 @@ export class Engine {
         for (const l of [...this.listeners]) l(line)
       }
       this.worker.onerror = (e) => {
-        console.error('[engine] erro no worker:', e.message)
+        console.error('[engine] worker error:', e.message)
       }
     }
     const uciok = this.waitFor((l) => l.includes('uciok'))
@@ -77,7 +77,7 @@ export class Engine {
     this.ready = true
   }
 
-  /** Roda `fn` em exclusão mútua (serializa comandos go). */
+  /** Runs `fn` under mutual exclusion (serializes `go` commands). */
   private runExclusive<T>(fn: () => Promise<T>): Promise<T> {
     const run = this.queue.then(fn, fn)
     this.queue = run.then(
@@ -99,13 +99,13 @@ export class Engine {
       const result = new Promise<RawAnalysis>((resolve, reject) => {
         const timer = setTimeout(() => {
           this.off(onLine)
-          reject(new Error('Tempo esgotado na análise do motor.'))
+          reject(new Error('Engine analysis timed out.'))
         }, 60000)
 
         const onLine: LineListener = (line) => {
           if (line.startsWith('info')) {
             const pvM = line.match(/ pv (.+)$/)
-            if (!pvM) return // ignora linhas sem PV (ex.: "currmove")
+            if (!pvM) return // ignore lines without a PV (e.g. "currmove")
             const dM = line.match(/ depth (\d+)/)
             const cpM = line.match(/ score cp (-?\d+)/)
             const mateM = line.match(/ score mate (-?\d+)/)
@@ -153,7 +153,7 @@ export class Engine {
   }
 }
 
-// Instância única compartilhada (carrega o WASM uma vez).
+// Shared singleton (loads the WASM once).
 let singleton: Engine | null = null
 export function getEngine(): Engine {
   if (!singleton) singleton = new Engine()

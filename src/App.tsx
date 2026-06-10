@@ -35,7 +35,7 @@ export default function App() {
 
   const apiKeyMissing = apiKey.trim().length === 0
 
-  // Carrega dados salvos
+  // Load saved data
   useEffect(() => {
     void (async () => {
       setGames(await getGames())
@@ -51,7 +51,7 @@ export default function App() {
       setPatterns(p)
       await persistPatterns(p)
     } catch (err) {
-      console.warn('Falha ao calcular padrões:', err)
+      console.warn('Failed to compute patterns:', err)
     } finally {
       setPatternsLoading(false)
     }
@@ -76,7 +76,7 @@ export default function App() {
       openGame(duplicate ? game : analyzed, duplicate)
       if (!duplicate) void refreshPatterns(list)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não consegui analisar esta partida.')
+      setError(err instanceof Error ? err.message : "Couldn't analyze this game.")
       setView('import')
     }
   }
