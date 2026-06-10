@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #161a16;
+  color: #e7ece4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Respeita notch / barras do celular */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium
+      transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-ink-900 hover:bg-accent-soft;
+  }
+  .btn-ghost {
+    @apply btn bg-ink-700 text-ink-100 hover:bg-ink-600;
+  }
+  .card {
+    @apply rounded-2xl bg-ink-800 p-4 shadow-panel ring-1 ring-white/5;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+}
+
+/* Markdown leve renderizado pelo Tutor */
+.tutor-md p {
+  @apply mb-2 leading-relaxed;
+}
+.tutor-md ul {
+  @apply mb-2 list-disc space-y-1 pl-5;
+}
+.tutor-md strong {
+  @apply font-semibold text-white;
+}
+.tutor-md ol {
+  @apply mb-2 list-decimal space-y-1 pl-5;
+}
+.tutor-md h2,
+.tutor-md h3,
+.tutor-md h4 {
+  @apply mb-1 mt-3 font-semibold text-white;
+}
+.tutor-md h2 {
+  @apply text-base;
+}
+.tutor-md h3 {
+  @apply text-[15px];
+}
+.tutor-md h4 {
+  @apply text-sm;
+}
+.tutor-md blockquote {
+  @apply my-2 rounded-r border-l-2 border-accent/60 bg-white/5 py-1 pl-3 text-ink-200;
+}
+.tutor-md code {
+  @apply rounded bg-ink-700 px-1 py-0.5 font-mono text-xs text-accent-soft;
+}
+.tutor-md table {
+  @apply my-2 w-full border-collapse text-sm;
+}
+.tutor-md th,
+.tutor-md td {
+  @apply border border-white/10 px-2 py-1 text-left;
+}
+.tutor-md th {
+  @apply bg-white/5 font-semibold text-white;
+}

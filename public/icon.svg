@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1a1f1a" />
+  <rect x="120" y="120" width="272" height="272" rx="32" fill="#769656" />
+  <text x="50%" y="56%" font-family="'Segoe UI Symbol','Noto Sans Symbols2','Arial',sans-serif" font-size="230" text-anchor="middle" dominant-baseline="central" fill="#EEEED2">&#9822;</text>
+</svg>

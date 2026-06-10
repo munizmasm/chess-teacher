@@ -1,0 +1,20 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Motor Stockfish — gerado pelo postinstall a partir de node_modules
+public/engine/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Artefato temporário de teste
+.tmp-*.mjs
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+logs
+*.log
+npm-debug.log*
